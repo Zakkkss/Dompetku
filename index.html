@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DompetKu - Aplikasi Pencatatan Keuangan Pribadi">
+    <title>DompetKu — Pencatatan Keuangan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"><div class="spinner-ring"></div><p class="loading-text">Memuat data...</p></div>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">💰</div>
+                    <span class="logo-text">DompetKu</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard" id="nav-dashboard">📊 <span>Dashboard</span></button>
+                <button class="nav-item" data-view="add" id="nav-add">➕ <span>Tambah Transaksi</span></button>
+                <button class="nav-item" data-view="history" id="nav-history">🕐 <span>Riwayat</span></button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Menghubungkan...</span>
+                </div>
+            </div>
+        </aside>
+
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Mobile Header -->
+        <header class="mobile-header" id="mobileHeader">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">☰</button>
+            <div class="mobile-logo">💰 <span>DompetKu</span></div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- DASHBOARD VIEW -->
+            <section class="view active" id="view-dashboard">
+                <div class="view-header">
+                    <div><h1 class="view-title">Dashboard</h1><p class="view-subtitle">Ringkasan keuangan Anda</p></div>
+                    <div class="header-date" id="headerDate"></div>
+                </div>
+                <div class="balance-card" id="balanceCard">
+                    <div class="balance-card-bg"></div>
+                    <div class="balance-content">
+                        <div class="balance-label">💳 Total Saldo</div>
+                        <div class="balance-amount" id="totalBalance">Rp 0</div>
+                        <div class="balance-update" id="lastUpdate">Terakhir diperbarui: —</div>
+                    </div>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-card income-card">
+                        <div class="summary-icon income-icon">📈</div>
+                        <div class="summary-info">
+                            <span class="summary-label">Total Pemasukan</span>
+                            <span class="summary-value income-value" id="totalIncome">Rp 0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card expense-card">
+                        <div class="summary-icon expense-icon">📉</div>
+                        <div class="summary-info">
+                            <span class="summary-label">Total Pengeluaran</span>
+                            <span class="summary-value expense-value" id="totalExpense">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-block">
+                    <div class="section-header">
+                        <h2 class="section-title">Transaksi Terakhir</h2>
+                        <button class="btn-link" id="btnViewAll">Lihat Semua →</button>
+                    </div>
+                    <div class="transaction-list" id="recentTransactions">
+                        <div class="empty-state"><p>Belum ada transaksi</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADD TRANSACTION VIEW -->
+            <section class="view" id="view-add">
+                <div class="view-header">
+                    <div><h1 class="view-title">Tambah Transaksi</h1><p class="view-subtitle">Catat pemasukan atau pengeluaran baru</p></div>
+                </div>
+                <div class="form-card">
+                    <form id="transactionForm" autocomplete="off">
+                        <div class="type-toggle-wrapper">
+                            <div class="type-toggle" id="typeToggle">
+                                <button type="button" class="type-btn active" data-type="pemasukan" id="btn-pemasukan">📈 Pemasukan</button>
+                                <button type="button" class="type-btn" data-type="pengeluaran" id="btn-pengeluaran">📉 Pengeluaran</button>
+                                <div class="toggle-slider" id="toggleSlider"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inputCategory" id="labelCategory">Sumber Dana</label>
+                            <input type="text" id="inputCategory" class="form-input" placeholder="Contoh: Gaji, Freelance, Bonus..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inputAmount">Nominal (Rp)</label>
+                            <input type="text" id="inputAmount" class="form-input amount-input" placeholder="0" required inputmode="numeric">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inputDescription">Keterangan <span class="optional-tag">(opsional)</span></label>
+                            <input type="text" id="inputDescription" class="form-input" placeholder="Tambahkan catatan singkat...">
+                        </div>
+                        <button type="submit" class="btn-submit" id="btnSubmit">
+                            <span>💾 Simpan Transaksi</span>
+                            <div class="btn-loader" id="btnLoader"></div>
+                        </button>
+                    </form>
+                </div>
+                <div class="suggestions-block" id="suggestionsBlock">
+                    <h3 class="suggestions-title" id="suggestionsTitle">Kategori Cepat</h3>
+                    <div class="suggestions-list" id="suggestionsList"></div>
+                </div>
+            </section>
+
+            <!-- HISTORY VIEW -->
+            <section class="view" id="view-history">
+                <div class="view-header">
+                    <div><h1 class="view-title">Riwayat Transaksi</h1><p class="view-subtitle">Semua catatan keuangan Anda</p></div>
+                    <button class="btn-refresh" id="btnRefresh" title="Muat Ulang Data">🔄</button>
+                </div>
+                <div class="filter-bar" id="filterBar">
+                    <button class="filter-chip active" data-filter="all" id="filter-all">Semua</button>
+                    <button class="filter-chip" data-filter="pemasukan" id="filter-pemasukan">Pemasukan</button>
+                    <button class="filter-chip" data-filter="pengeluaran" id="filter-pengeluaran">Pengeluaran</button>
+                </div>
+                <div class="transaction-list full-list" id="historyTransactions">
+                    <div class="empty-state"><p>Belum ada transaksi</p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <button class="bottom-nav-item active" data-view="dashboard" id="bnav-dashboard">📊<span>Dashboard</span></button>
+        <button class="bottom-nav-item" data-view="add" id="bnav-add"><div class="add-btn-circle">＋</div><span>Tambah</span></button>
+        <button class="bottom-nav-item" data-view="history" id="bnav-history">🕐<span>Riwayat</span></button>
+    </nav>
+    <script src="app.js"></script>
+</body>
+</html>
